@@ -24,7 +24,6 @@ section .data
 
 section .text
 
-
 display_header:
     push rbp
     mov rbp, rsp
@@ -37,16 +36,17 @@ display_header:
     pop rbp
     ret
 
-
 display_footer:
     push rbp
     mov rbp, rsp
     push rbx
     push rsi
-    sub rsp, 32
+    push r12
+    push r13
+    sub rsp, 48
 
-    xor rbx, rbx     
-    xor rsi, rsi      
+    xor rbx, rbx
+    xor rsi, rsi
 
 .loop_stats:
     cmp rsi, NUM_BLOCOS
@@ -64,35 +64,33 @@ display_footer:
     jmp .loop_stats
 
 .mostrar_stats:
-    mov r9, rbx
-    mov rax, NUM_BLOCOS
-    sub rax, rbx      
+    mov r12, rbx              
+    mov r13, NUM_BLOCOS
+    sub r13, rbx              
 
-    mov r10, rbx
-    imul r10, TAM_BLOCO
+    mov rax, r12
+    imul rax, TAM_BLOCO        
 
-    mov r11, rax
-    imul r11, TAM_BLOCO
+    mov r11, r13
+    imul r11, TAM_BLOCO       
 
+    mov [rsp + 32], r11       
     lea rcx, [rel fmt_stats]
-    mov rdx, rbx           
-    mov r8, r10            
-    mov r9, rax           
-
-    sub rsp, 8
-    push r11
+    mov rdx, r12               
+    mov r8, rax                
+    mov r9, r13              
     call printf
-    add rsp, 16
 
     lea rcx, [rel footer]
     call printf
 
-    add rsp, 32
+    add rsp, 48
+    pop r13
+    pop r12
     pop rsi
     pop rbx
     pop rbp
     ret
-
 
 display_memoria:
     push rbp
@@ -102,7 +100,7 @@ display_memoria:
 
     call display_header
 
-    xor rbx, rbx        
+    xor rbx, rbx
 
 .loop_display:
     cmp rbx, NUM_BLOCOS
@@ -110,31 +108,29 @@ display_memoria:
 
     mov rcx, rbx
     call get_bloco_status
-    mov r12d, eax     
+    mov r12d, eax
 
-    
     mov r13, rbx
-    imul r13, TAM_BLOCO   
+    imul r13, TAM_BLOCO
 
     cmp r12d, 0
     je .mostrar_livre
 
 .mostrar_ocupado:
-  
     mov rcx, rbx
-    call get_bloco_nome    
+    call get_bloco_nome
 
     lea rcx, [rel fmt_ocupado]
-    mov rdx, r13          
-    mov r8, TAM_BLOCO     
-    mov r9, rax           
+    mov rdx, r13
+    mov r8, TAM_BLOCO
+    mov r9, rax
     call printf
     jmp .proximo
 
 .mostrar_livre:
     lea rcx, [rel fmt_livre]
-    mov rdx, r13         
-    mov r8, TAM_BLOCO     
+    mov rdx, r13
+    mov r8, TAM_BLOCO
     call printf
 
 .proximo:
