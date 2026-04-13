@@ -1,5 +1,3 @@
-; display.asm - Visualizacao da memoria RAM
-
 global display_memoria
 global display_header
 global display_footer
