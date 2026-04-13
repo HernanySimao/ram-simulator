@@ -24,9 +24,7 @@ section .data
 
 section .text
 
-;----------------------------------
-; display_header - imprime o cabecalho
-;----------------------------------
+
 display_header:
     push rbp
     mov rbp, rsp
@@ -39,9 +37,7 @@ display_header:
     pop rbp
     ret
 
-;----------------------------------
-; display_footer - imprime o rodape com estatisticas
-;----------------------------------
+
 display_footer:
     push rbp
     mov rbp, rsp
@@ -49,8 +45,8 @@ display_footer:
     push rsi
     sub rsp, 32
 
-    xor rbx, rbx       ; rbx = blocos livres
-    xor rsi, rsi       ; rsi = indice
+    xor rbx, rbx     
+    xor rsi, rsi      
 
 .loop_stats:
     cmp rsi, NUM_BLOCOS
@@ -68,12 +64,10 @@ display_footer:
     jmp .loop_stats
 
 .mostrar_stats:
-    ; blocos livres
     mov r9, rbx
     mov rax, NUM_BLOCOS
-    sub rax, rbx       ; blocos ocupados
+    sub rax, rbx      
 
-    ; bytes livres e ocupados
     mov r10, rbx
     imul r10, TAM_BLOCO
 
@@ -81,10 +75,10 @@ display_footer:
     imul r11, TAM_BLOCO
 
     lea rcx, [rel fmt_stats]
-    mov rdx, rbx           ; livres (blocos)
-    mov r8, r10            ; livres (bytes)
-    mov r9, rax            ; ocupados (blocos)
-    ; 5o parametro vai na stack
+    mov rdx, rbx           
+    mov r8, r10            
+    mov r9, rax           
+
     sub rsp, 8
     push r11
     call printf
@@ -99,9 +93,7 @@ display_footer:
     pop rbp
     ret
 
-;----------------------------------
-; display_memoria - mostra todos os blocos
-;----------------------------------
+
 display_memoria:
     push rbp
     mov rbp, rsp
@@ -110,40 +102,39 @@ display_memoria:
 
     call display_header
 
-    xor rbx, rbx       ; rbx = indice do bloco
+    xor rbx, rbx        
 
 .loop_display:
     cmp rbx, NUM_BLOCOS
     jge .fim_display
 
-    ; obter status do bloco
     mov rcx, rbx
     call get_bloco_status
-    mov r12d, eax      ; r12 = status
+    mov r12d, eax     
 
-    ; calcular endereco de memoria (rbx * 64)
+    
     mov r13, rbx
-    imul r13, TAM_BLOCO   ; r13 = endereco
+    imul r13, TAM_BLOCO   
 
     cmp r12d, 0
     je .mostrar_livre
 
 .mostrar_ocupado:
-    ; obter nome do processo
+  
     mov rcx, rbx
-    call get_bloco_nome    ; rax = endereco do nome
+    call get_bloco_nome    
 
     lea rcx, [rel fmt_ocupado]
-    mov rdx, r13           ; endereco hex
-    mov r8, TAM_BLOCO      ; tamanho
-    mov r9, rax            ; nome do processo
+    mov rdx, r13          
+    mov r8, TAM_BLOCO     
+    mov r9, rax           
     call printf
     jmp .proximo
 
 .mostrar_livre:
     lea rcx, [rel fmt_livre]
-    mov rdx, r13           ; endereco hex
-    mov r8, TAM_BLOCO      ; tamanho
+    mov rdx, r13         
+    mov r8, TAM_BLOCO     
     call printf
 
 .proximo:
