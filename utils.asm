@@ -1,4 +1,3 @@
-; utils.asm - Funções auxiliares
 
 extern printf
 extern scanf
@@ -17,10 +16,7 @@ section .data
 
 section .text
 
-;----------------------------------
-; print_string - imprime uma string
-; parametro: rcx = endereco da string
-;----------------------------------
+
 print_string:
     push rbp
     mov rbp, rsp
@@ -34,10 +30,7 @@ print_string:
     pop rbp
     ret
 
-;----------------------------------
-; print_int - imprime um inteiro
-; parametro: rcx = valor inteiro
-;----------------------------------
+
 print_int:
     push rbp
     mov rbp, rsp
@@ -51,9 +44,7 @@ print_int:
     pop rbp
     ret
 
-;----------------------------------
-; print_newline - imprime uma linha nova
-;----------------------------------
+
 print_newline:
     push rbp
     mov rbp, rsp
@@ -66,10 +57,7 @@ print_newline:
     pop rbp
     ret
 
-;----------------------------------
-; read_int - lê um inteiro do utilizador
-; retorno: eax = valor lido
-;----------------------------------
+
 read_int:
     push rbp
     mov rbp, rsp
@@ -79,7 +67,6 @@ read_int:
     lea rcx, [rel fmt_read]
     call scanf
 
-    ; limpar buffer
     call getchar
 
     mov eax, [rbp - 4]

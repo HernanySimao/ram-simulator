@@ -1,5 +1,3 @@
-; memoria.asm - Logica de alocacao e desalocacao
-
 global init_memoria
 global alocar_memoria
 global desalocar_memoria
@@ -23,14 +21,12 @@ section .data
     fmt_printf      db "%s", 0
 
 section .bss
-    blocos_status   resb NUM_BLOCOS        ; 0=LIVRE, 1=OCUPADO
-    blocos_nome     resb NUM_BLOCOS * TAM_NOME  ; nome de cada processo
+    blocos_status   resb NUM_BLOCOS        
+    blocos_nome     resb NUM_BLOCOS * TAM_NOME   
 
 section .text
 
-;----------------------------------
-; init_memoria - inicializa todos os blocos como LIVRE
-;----------------------------------
+
 init_memoria:
     push rbp
     mov rbp, rsp
@@ -38,22 +34,17 @@ init_memoria:
     mov rcx, NUM_BLOCOS
     lea rdi, [rel blocos_status]
     xor al, al
-    rep stosb                          ; preenche tudo com 0 (LIVRE)
+    rep stosb                         
 
     mov rcx, NUM_BLOCOS * TAM_NOME
     lea rdi, [rel blocos_nome]
     xor al, al
-    rep stosb                          ; limpa todos os nomes
+    rep stosb                           
 
     pop rbp
     ret
 
-;----------------------------------
-; alocar_memoria - aloca N blocos consecutivos
-; parametro: rcx = numero de blocos a alocar
-;            rdx = endereco do nome do processo
-; retorno:   eax = indice do primeiro bloco (-1 se falhar)
-;----------------------------------
+
 alocar_memoria:
     push rbp
     mov rbp, rsp
@@ -62,26 +53,23 @@ alocar_memoria:
     push rdi
     sub rsp, 32
 
-    mov rbx, rcx               ; rbx = numero de blocos pedidos
-    mov rsi, rdx               ; rsi = nome do processo
+    mov rbx, rcx              
+    mov rsi, rdx               
 
-    ; procurar blocos livres consecutivos
-    xor rcx, rcx               ; rcx = indice atual
+    xor rcx, rcx               
 
 .loop_busca:
     cmp rcx, NUM_BLOCOS
     jge .sem_espaco
 
-    ; verificar se bloco rcx esta livre
     lea rdi, [rel blocos_status]
     mov al, [rdi + rcx]
     cmp al, 0
     jne .proximo
 
-    ; contar blocos livres consecutivos a partir de rcx
     push rcx
-    mov rdx, rcx               ; rdx = inicio
-    xor r8, r8                 ; r8 = contador
+    mov rdx, rcx              
+    xor r8, r8               
 
 .loop_conta:
     cmp rcx, NUM_BLOCOS
@@ -99,40 +87,36 @@ alocar_memoria:
     cmp r8, rbx
     jl .nao_suficiente
 
-    ; temos blocos suficientes, alocar
-    pop rcx                    ; rcx = indice inicial
-    push rcx                   ; guardar para retorno
+    pop rcx                    
+    push rcx                   
 
 .loop_alocar:
     cmp r8, 0
     je .alocar_nome
     lea rdi, [rel blocos_status]
-    mov byte [rdi + rcx], 1    ; marcar como OCUPADO
+    mov byte [rdi + rcx], 1    
     inc rcx
     dec r8
     jmp .loop_alocar
 
 .alocar_nome:
-    pop rcx                    ; rcx = indice inicial
+    pop rcx                    
     push rcx
 
-    ; copiar nome para cada bloco alocado
-    mov r9, rcx                ; r9 = indice inicial
-    mov r10, rbx               ; r10 = contador de blocos
+    mov r9, rcx                 
+    mov r10, rbx                
 
 .loop_nome:
     cmp r10, 0
     je .sucesso
 
-    ; calcular endereco do nome deste bloco
     mov rax, r9
     mov r11, TAM_NOME
     mul r11
     lea rdi, [rel blocos_nome]
-    add rdi, rax               ; rdi = destino do nome
+    add rdi, rax               
 
-    ; copiar nome (até TAM_NOME bytes)
-    mov r8, rsi                ; r8 = fonte (nome)
+    mov r8, rsi                
     mov rcx, TAM_NOME
 
 .loop_copia:
@@ -156,7 +140,7 @@ alocar_memoria:
     lea rdx, [rel msg_alocado]
     call printf
 
-    pop rax                    ; eax = indice inicial
+    pop rax                    
     jmp .fim
 
 .nao_suficiente:
@@ -181,11 +165,7 @@ alocar_memoria:
     pop rbp
     ret
 
-;----------------------------------
-; desalocar_memoria - liberta os blocos de um processo
-; parametro: rcx = endereco do nome do processo
-; retorno:   eax = 0 (sucesso), -1 (falha)
-;----------------------------------
+
 desalocar_memoria:
     push rbp
     mov rbp, rsp
@@ -193,28 +173,26 @@ desalocar_memoria:
     push rsi
     sub rsp, 32
 
-    mov rbx, rcx               ; rbx = nome a desalocar
-    xor rsi, rsi               ; rsi = indice
-    xor r15, r15               ; r15 = contador de blocos libertados
+    mov rbx, rcx              
+    xor rsi, rsi               
+    xor r15, r15              
 
 .loop_desal:
     cmp rsi, NUM_BLOCOS
     jge .fim_desal
 
-    ; verificar se bloco esta ocupado
     lea rdi, [rel blocos_status]
     mov al, [rdi + rsi]
     cmp al, 1
     jne .prox_desal
 
-    ; comparar nome do bloco com o nome pedido
     mov rax, rsi
     mov r11, TAM_NOME
     mul r11
     lea rdi, [rel blocos_nome]
-    add rdi, rax               ; rdi = nome do bloco atual
+    add rdi, rax              
 
-    mov r8, rbx                ; r8 = nome pedido
+    mov r8, rbx               
     mov rcx, TAM_NOME
 
 .loop_cmp:
@@ -231,11 +209,9 @@ desalocar_memoria:
     jne .loop_cmp
 
 .match:
-    ; libertar este bloco
     lea rdi, [rel blocos_status]
     mov byte [rdi + rsi], 0
 
-    ; limpar nome do bloco
     mov rax, rsi
     mov r11, TAM_NOME
     mul r11
@@ -277,11 +253,8 @@ desalocar_memoria:
     pop rbp
     ret
 
-;----------------------------------
-; get_bloco_status - retorna status de um bloco
-; parametro: rcx = indice do bloco
-; retorno:   eax = 0 (LIVRE) ou 1 (OCUPADO)
-;----------------------------------
+
+
 get_bloco_status:
     push rbp
     mov rbp, rsp
@@ -292,11 +265,7 @@ get_bloco_status:
     pop rbp
     ret
 
-;----------------------------------
-; get_bloco_nome - retorna endereco do nome de um bloco
-; parametro: rcx = indice do bloco
-; retorno:   rax = endereco do nome
-;----------------------------------
+
 get_bloco_nome:
     push rbp
     mov rbp, rsp

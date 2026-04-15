@@ -1,5 +1,3 @@
-; main.asm - Menu principal do Simulador de RAM
-
 extern init_memoria
 extern alocar_memoria
 extern desalocar_memoria
@@ -40,12 +38,10 @@ main:
     mov rbp, rsp
     sub rsp, 32
 
-    ; inicializar memoria
     call init_memoria
     call display_memoria
 
 .loop_menu:
-    ; mostrar menu
     lea rcx, [rel fmt_str]
     lea rdx, [rel menu]
     call printf
@@ -66,7 +62,6 @@ main:
     cmp rbx, 4
     je .sair
 
-    ; opcao invalida
     lea rcx, [rel fmt_str]
     lea rdx, [rel msg_invalid]
     call printf
@@ -77,7 +72,6 @@ main:
     jmp .loop_menu
 
 .alocar:
-    ; pedir nome do processo
     lea rcx, [rel fmt_str]
     lea rdx, [rel msg_nome]
     call printf
@@ -86,13 +80,12 @@ main:
     lea rdx, [rel nome_buffer]
     call scanf
 
-    ; pedir numero de blocos
     lea rcx, [rel fmt_str]
     lea rdx, [rel msg_blocos]
     call printf
 
     call read_int
-    mov r14, rax               ; r14 = numero de blocos
+    mov r14, rax               
 
     ; alocar
     mov rcx, r14
@@ -103,7 +96,6 @@ main:
     jmp .loop_menu
 
 .desalocar:
-    ; pedir nome do processo
     lea rcx, [rel fmt_str]
     lea rdx, [rel msg_desal]
     call printf
